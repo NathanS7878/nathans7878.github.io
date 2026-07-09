@@ -1,0 +1,318 @@
+/* ---------------------------------------------------------------
+   Design tokens — from the design handoff (OKLCH, warm neutrals)
+   --------------------------------------------------------------- */
+:root {
+  --bg:          oklch(0.08 0.004 60);
+  --text:        oklch(0.96 0.004 60);
+  --text-bright: oklch(0.97 0.004 60);
+  --muted:       oklch(0.68 0.008 60);
+  --dim:         oklch(0.5 0.01 60);
+  --accent:      oklch(0.7 0.16 40);
+  --border:      oklch(0.22 0.006 60);
+  --thumb-a:     oklch(0.16 0.006 60);
+  --thumb-b:     oklch(0.12 0.004 60);
+
+  --serif: 'Newsreader', Georgia, serif;
+  --sans:  'Inter', system-ui, sans-serif;
+  --mono:  'JetBrains Mono', Consolas, monospace;
+
+  --pad-x: 64px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.nav, .hero, .case, .about, .footer {
+  max-width: 1280px;
+  margin-inline: auto;
+}
+
+a {
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+/* ------------------------------ Nav ------------------------------ */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px var(--pad-x) 0;
+}
+
+.wordmark {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--text);
+}
+
+.nav-links {
+  display: flex;
+  gap: 36px;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.nav-links a { color: var(--muted); }
+.nav-links a:hover,
+.nav-links a:focus-visible,
+.wordmark:hover { color: var(--accent); }
+
+/* ------------------------------ Hero ------------------------------ */
+.hero {
+  padding: 96px var(--pad-x) 80px;
+}
+
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(40px, 6.25vw, 80px);
+  line-height: 1.02;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--text-bright);
+  max-width: 920px;
+  margin: 0;
+}
+
+/* -------------------------- Case studies -------------------------- */
+.case-list { display: flex; flex-direction: column; }
+
+.case, .about {
+  display: grid;
+  grid-template-columns: 120px 1fr 420px;
+  align-items: end;
+  gap: 24px;
+  padding: 56px var(--pad-x);
+  border-top: 1px solid var(--border);
+}
+
+.case:last-of-type { border-bottom: none; } /* about section follows with its own top border */
+
+.case-index {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--dim);
+  transition: color 300ms ease;
+}
+
+.case:hover .case-index { color: var(--accent); }
+
+.case-body h2, .about h2 {
+  font-family: var(--serif);
+  font-size: 44px;
+  font-weight: 400;
+  color: var(--text);
+  margin: 0 0 16px;
+}
+
+.case-body p, .about p {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 0 0 16px;
+  max-width: 460px;
+}
+
+.case-tags {
+  display: flex;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------------------------- Thumbnails ---------------------------- */
+.case-thumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 260px;
+  border-radius: 6px;
+  background: var(--thumb-b);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: transform 400ms var(--ease), border-color 400ms ease;
+}
+
+.case-thumb:hover {
+  transform: translateY(-4px);
+  border-color: oklch(0.32 0.01 60);
+}
+
+.case-thumb svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.thumb-label {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--dim);
+}
+
+/* Gravity — orbiting bodies */
+.thumb-gravity .orbit-ring {
+  fill: none;
+  stroke: var(--thumb-a);
+  stroke-width: 1.5;
+}
+.thumb-gravity .sun { fill: var(--accent); }
+.thumb-gravity .planet { fill: var(--muted); }
+.thumb-gravity .orbit {
+  transform-origin: 210px 130px;
+  animation: orbit 10s linear infinite;
+}
+/* squash rotation into the ellipse plane */
+.thumb-gravity .orbit-a { animation-duration: 14s; }
+.thumb-gravity .orbit-b { animation-duration: 9s; animation-direction: reverse; }
+.thumb-gravity .orbit-c { animation-duration: 5.5s; }
+
+@keyframes orbit {
+  from { transform: scale(1, 0.386) rotate(0turn); }
+  to   { transform: scale(1, 0.386) rotate(1turn); }
+}
+
+/* Snake — cells stepping across a grid */
+.thumb-snake .seg { fill: var(--muted); }
+.thumb-snake .s1 { fill: var(--text); }
+.thumb-snake .food { fill: var(--accent); }
+.thumb-snake .snake {
+  animation: slither 6s steps(16) infinite;
+}
+@keyframes slither {
+  from { transform: translateX(-80px); }
+  to   { transform: translateX(340px); }
+}
+.thumb-snake .food { animation: food-blink 6s linear infinite; }
+@keyframes food-blink {
+  0%, 88%  { opacity: 1; }
+  92%, 100% { opacity: 0; }
+}
+
+/* RPS — cycling terminal words */
+.thumb-rps .rps-words {
+  position: relative;
+  width: 160px;
+  height: 30px;
+}
+.rps-word {
+  position: absolute;
+  inset: 0;
+  font-family: var(--mono);
+  font-size: 20px;
+  color: var(--text);
+  opacity: 0;
+  animation: rps-cycle 4.5s infinite;
+}
+.rps-word.w2 { animation-delay: 1.5s; }
+.rps-word.w3 { animation-delay: 3s; }
+@keyframes rps-cycle {
+  0%, 30%   { opacity: 1; }
+  33%, 100% { opacity: 0; }
+}
+.thumb-rps .thumb-label { color: var(--accent); }
+
+/* ------------------------------ About ------------------------------ */
+.about { border-top: 1px solid var(--border); align-items: start; }
+
+/* ------------------------------ Footer ------------------------------ */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 36px var(--pad-x);
+  border-top: 1px solid var(--border);
+}
+
+.copyright { font-size: 13px; color: var(--dim); }
+
+.footer-links {
+  display: flex;
+  gap: 28px;
+  font-size: 13px;
+}
+.footer-links a { color: var(--muted); }
+.footer-links a:hover, .footer-links a:focus-visible { color: var(--accent); }
+
+/* --------------------------- Animations --------------------------- */
+/* Load-in (nav + hero) */
+.reveal-load {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: rise 900ms var(--ease) forwards;
+}
+.reveal-load.delay-1 { animation-delay: 150ms; }
+
+@keyframes rise {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll reveal (case rows, about) */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 600ms var(--ease), transform 600ms var(--ease);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Reduced motion: show everything, stop decorative animation */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal-load, .reveal {
+    opacity: 1;
+    transform: none;
+    animation: none;
+    transition: none;
+  }
+  .thumb-gravity .orbit, .thumb-snake .snake,
+  .thumb-snake .food, .rps-word { animation: none; }
+  .rps-word.w1 { opacity: 1; }
+}
+
+/* --------------------------- Responsive --------------------------- */
+@media (max-width: 960px) {
+  :root { --pad-x: 28px; }
+
+  .hero { padding-top: 72px; padding-bottom: 56px; }
+
+  .case, .about {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 16px;
+    padding-block: 44px;
+  }
+
+  .case-body h2, .about h2 { font-size: 32px; }
+
+  .case-thumb { width: 100%; max-width: 480px; }
+}
+
+@media (max-width: 560px) {
+  .nav { flex-direction: column; gap: 16px; align-items: flex-start; }
+  .nav-links { gap: 24px; }
+  .footer { flex-direction: column; gap: 14px; align-items: flex-start; }
+}

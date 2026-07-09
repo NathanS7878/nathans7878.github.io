@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nathan S. — CS Portfolio</title>
+  <meta name="description" content="Selected work in C++, physics simulation & graphics programming.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,72,400;0,72,500;1,72,400;1,72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <nav class="nav reveal-load">
+    <a class="wordmark" href="#top">Nathan S.</a>
+    <div class="nav-links">
+      <a href="#work">Work</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <h1 class="reveal-load delay-1">Selected work in C++, physics simulation &amp; graphics&nbsp;programming.</h1>
+  </header>
+
+  <main id="work" class="case-list">
+
+    <!-- 01 · Gravity -->
+    <article class="case reveal">
+      <span class="case-index">01</span>
+      <div class="case-body">
+        <h2>Gravity — 3D N-body orbital simulator</h2>
+        <p>A real-time Newtonian gravity simulation in C++. Started as a headless 2D integrator writing orbits to CSV, then grew into a full 3D visualizer built with Raylib — softened force computation, semi-implicit Euler integration, and bodies orbiting a central mass in a perspective camera.</p>
+        <div class="case-tags">
+          <span>C++</span><span aria-hidden="true">·</span><span>Raylib</span><span aria-hidden="true">·</span><span>Physics</span>
+        </div>
+      </div>
+      <a class="case-thumb thumb-gravity" href="https://github.com/NathanS7878/Projects" aria-label="Gravity project on GitHub">
+        <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+          <ellipse class="orbit-ring" cx="210" cy="130" rx="150" ry="58"/>
+          <ellipse class="orbit-ring" cx="210" cy="130" rx="100" ry="38"/>
+          <ellipse class="orbit-ring" cx="210" cy="130" rx="55" ry="21"/>
+          <circle class="sun" cx="210" cy="130" r="9"/>
+          <g class="orbit orbit-a"><circle class="planet" cx="360" cy="130" r="4"/></g>
+          <g class="orbit orbit-b"><circle class="planet" cx="310" cy="130" r="3.5"/></g>
+          <g class="orbit orbit-c"><circle class="planet" cx="265" cy="130" r="3"/></g>
+        </svg>
+        <span class="thumb-label">n-body simulation</span>
+      </a>
+    </article>
+
+    <!-- 02 · Snake -->
+    <article class="case reveal">
+      <span class="case-index">02</span>
+      <div class="case-body">
+        <h2>Snake — grid renderer &amp; game loop</h2>
+        <p>The classic, rebuilt from scratch on a Raylib game loop. A fixed-timestep grid renderer drives the board, with movement, growth, and collision handled cell-by-cell — an exercise in game state, input handling, and immediate-mode drawing.</p>
+        <div class="case-tags">
+          <span>C++</span><span aria-hidden="true">·</span><span>Raylib</span><span aria-hidden="true">·</span><span>Game dev</span>
+        </div>
+      </div>
+      <a class="case-thumb thumb-snake" href="https://github.com/NathanS7878/Projects" aria-label="Snake project on GitHub">
+        <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+          <g class="grid-lines"></g>
+          <g class="snake">
+            <rect class="seg s4" x="0" y="120" width="20" height="20"/>
+            <rect class="seg s3" x="20" y="120" width="20" height="20"/>
+            <rect class="seg s2" x="40" y="120" width="20" height="20"/>
+            <rect class="seg s1" x="60" y="120" width="20" height="20"/>
+          </g>
+          <rect class="food" x="340" y="120" width="20" height="20"/>
+        </svg>
+        <span class="thumb-label">snake</span>
+      </a>
+    </article>
+
+    <!-- 03 · Rock Paper Scissors -->
+    <article class="case reveal">
+      <span class="case-index">03</span>
+      <div class="case-body">
+        <h2>Rock Paper Scissors — console game</h2>
+        <p>A terminal game against the computer, and the project where the fundamentals clicked: control flow, pseudo-random choice, input validation, and structuring a program into clean, testable functions.</p>
+        <div class="case-tags">
+          <span>C++</span><span aria-hidden="true">·</span><span>CLI</span><span aria-hidden="true">·</span><span>Fundamentals</span>
+        </div>
+      </div>
+      <a class="case-thumb thumb-rps" href="https://github.com/NathanS7878/Projects" aria-label="Rock Paper Scissors project on GitHub">
+        <div class="rps-words" aria-hidden="true">
+          <span class="rps-word w1">&gt; rock</span>
+          <span class="rps-word w2">&gt; paper</span>
+          <span class="rps-word w3">&gt; scissors</span>
+        </div>
+        <span class="thumb-label">you win!</span>
+      </a>
+    </article>
+
+  </main>
+
+  <section class="about reveal" id="about">
+    <span class="case-index" aria-hidden="true">—</span>
+    <div class="case-body">
+      <h2>About</h2>
+      <p>I'm Nathan, a computer science student who likes building things from first principles — simulations, games, and graphics in C++. Right now I'm digging into AI and quantum computing, and where the two might take each other.</p>
+    </div>
+    <div></div>
+  </section>
+
+  <footer class="footer" id="contact">
+    <span class="copyright">© 2026 Nathan S.</span>
+    <div class="footer-links">
+      <a href="https://github.com/NathanS7878" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/nathans78" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:98899dragons@gmail.com">Email</a>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
