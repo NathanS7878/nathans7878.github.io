@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nathan S. — CS Portfolio</title>
-  <meta name="description" content="Selected work in C++, physics simulation & graphics programming.">
+  <meta name="description" content="Selected work in systems programming, AI infrastructure & real-time graphics.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,72,400;0,72,500;1,72,400;1,72,500&display=swap" rel="stylesheet">
@@ -22,14 +22,44 @@
   </nav>
 
   <header class="hero" id="top">
-    <h1 class="reveal-load delay-1">Selected work in C++, physics simulation &amp; graphics&nbsp;programming.</h1>
+    <h1 class="reveal-load delay-1">Selected work in systems programming, AI infrastructure &amp; real-time&nbsp;graphics.</h1>
   </header>
 
   <main id="work" class="case-list">
 
-    <!-- 01 · Gravity -->
+    <!-- 01 · MiniDynamo -->
     <article class="case reveal">
       <span class="case-index">01</span>
+      <div class="case-body">
+        <h2>MiniDynamo — KV-cache-aware LLM inference router</h2>
+        <p>A distributed inference-serving system modeled on NVIDIA Dynamo: an async Rust frontend (axum/Tokio) routing OpenAI-compatible requests across a pool of Python model workers. It tokenizes each prompt, hashes it into prefix-dependent blocks, and routes to the worker holding the longest cached prefix — cutting time-to-first-token 23% versus round-robin at 91% cache reuse.</p>
+        <div class="case-tags">
+          <span>Rust</span><span aria-hidden="true">·</span><span>Python</span><span aria-hidden="true">·</span><span>Distributed systems</span>
+        </div>
+      </div>
+      <a class="case-thumb thumb-dynamo" href="https://github.com/NathanS7878/MiniDynamo" aria-label="MiniDynamo project on GitHub">
+        <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+          <line class="link" x1="150" y1="130" x2="292" y2="70"/>
+          <line class="link" x1="150" y1="130" x2="292" y2="130"/>
+          <line class="link" x1="150" y1="130" x2="292" y2="190"/>
+          <rect class="router" x="72" y="104" width="70" height="52" rx="6"/>
+          <line class="req" x1="86" y1="120" x2="128" y2="120"/>
+          <line class="req" x1="86" y1="130" x2="120" y2="130"/>
+          <line class="req" x1="86" y1="140" x2="128" y2="140"/>
+          <rect class="worker" x="292" y="52" width="62" height="36" rx="5"/>
+          <rect class="worker hot" x="292" y="112" width="62" height="36" rx="5"/>
+          <rect class="worker" x="292" y="172" width="62" height="36" rx="5"/>
+          <circle class="pkt pkt-b" cx="150" cy="130" r="4"/>
+          <circle class="pkt pkt-a" cx="150" cy="130" r="3"/>
+          <circle class="pkt pkt-c" cx="150" cy="130" r="3"/>
+        </svg>
+        <span class="thumb-label">kv-aware routing</span>
+      </a>
+    </article>
+
+    <!-- 02 · Gravity -->
+    <article class="case reveal">
+      <span class="case-index">02</span>
       <div class="case-body">
         <h2>Gravity — 3D N-body orbital simulator</h2>
         <p>A real-time Newtonian gravity simulation in C++. Started as a headless 2D integrator writing orbits to CSV, then grew into a full 3D visualizer built with Raylib — softened force computation, semi-implicit Euler integration, and bodies orbiting a central mass in a perspective camera.</p>
@@ -51,9 +81,9 @@
       </a>
     </article>
 
-    <!-- 02 · Snake -->
+    <!-- 03 · Snake -->
     <article class="case reveal">
-      <span class="case-index">02</span>
+      <span class="case-index">03</span>
       <div class="case-body">
         <h2>Snake — grid renderer &amp; game loop</h2>
         <p>The classic, rebuilt from scratch on a Raylib game loop. A fixed-timestep grid renderer drives the board, with movement, growth, and collision handled cell-by-cell — an exercise in game state, input handling, and immediate-mode drawing.</p>
@@ -76,9 +106,9 @@
       </a>
     </article>
 
-    <!-- 03 · Rock Paper Scissors -->
+    <!-- 04 · Rock Paper Scissors -->
     <article class="case reveal">
-      <span class="case-index">03</span>
+      <span class="case-index">04</span>
       <div class="case-body">
         <h2>Rock Paper Scissors — console game</h2>
         <p>A terminal game against the computer, and the project where the fundamentals clicked: control flow, pseudo-random choice, input validation, and structuring a program into clean, testable functions.</p>
