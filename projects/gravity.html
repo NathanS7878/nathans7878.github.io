@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gravity — Nathan Stevens</title>
+  <meta name="description" content="A real-time 3D Newtonian N-body orbital simulator in C++ with semi-implicit Euler integration and softened forces.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,72,400;0,72,500;1,72,400;1,72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <article class="detail">
+    <div class="detail-inner">
+
+      <a class="back-link" href="../index.html#work">← Work</a>
+
+      <header class="detail-header reveal-load">
+        <h1>Gravity</h1>
+        <p class="subtitle">A real-time Newtonian N-body orbital simulator in C++, grown from a headless 2D integrator into a 3D Raylib visualizer.</p>
+
+        <div class="chips">
+          <span>C++</span><span>Raylib</span><span>Numerical methods</span>
+        </div>
+
+        <p class="result-line">Stable closed orbits at 60 FPS under direct pairwise gravitation, with semi-implicit Euler integration and softened forces.</p>
+      </header>
+
+      <h2>The problem</h2>
+      <p>Simulating gravity is a two-line formula and a pile of numerical traps. Newton's law gives the force between any two bodies immediately, but integrating that force forward in time naively produces orbits that spiral outward and bodies that fly to infinity the moment two of them pass close to each other.</p>
+      <p>The interesting part of this project isn't the physics — it's the integration scheme and the singularity, both of which are choices you have to make deliberately.</p>
+
+      <h2>How it works</h2>
+      <ul>
+        <li><strong>Semi-implicit (symplectic) Euler, not naive Euler.</strong> Velocity is updated from the current acceleration first, and position is then updated using the <em>already-updated</em> velocity. The two schemes differ by one line, but naive Euler injects energy every step and orbits spiral outward; semi-implicit Euler bounds the energy error instead of accumulating it, so orbits stay closed over long runs at the same step size.</li>
+        <li><strong>Softened forces.</strong> The distance term carries a softening constant, so <code>r</code> never reaches zero. Without it, two bodies passing close produce a division by a near-zero distance, the force spikes, and the pair is slingshotted out of the simulation — the classic N-body blowup.</li>
+        <li><strong>Direct pairwise summation.</strong> Every body's force is computed against every other body, then integrated. Straightforward, exact within the softening, and O(n²).</li>
+        <li><strong>Two front ends from one core.</strong> It started headless, writing 2D orbit traces to CSV for inspection, then grew a 3D Raylib visualizer with a perspective camera — the same integrator, rendered rather than logged.</li>
+      </ul>
+
+      <h2>Limitations</h2>
+      <ul>
+        <li><strong>O(n²) pairwise forces.</strong> Every body is compared against every other one each step, so cost grows quadratically and the simulation is limited to small body counts. A Barnes-Hut octree would reduce this to O(n log n) by treating distant clusters as single masses; it isn't implemented.</li>
+        <li><strong>Semi-implicit Euler is only first-order accurate.</strong> It conserves energy well for its cost, which is why it was chosen, but a higher-order symplectic integrator such as velocity Verlet or leapfrog would give substantially better accuracy per step.</li>
+        <li><strong>Softening is a fudge.</strong> It buys numerical stability by making gravity slightly wrong at short range. Close encounters are damped rather than resolved, so the simulation is not accurate for genuinely close passes.</li>
+        <li><strong>Fixed timestep, no collision handling.</strong> Bodies pass through one another, and there is no adaptive stepping for fast-moving close encounters.</li>
+      </ul>
+
+      <div class="detail-links">
+        <a href="https://github.com/NathanS7878/Projects-2.0/tree/main/3D%20Gravity" target="_blank" rel="noopener">GitHub repo ↗</a>
+      </div>
+
+    </div>
+  </article>
+
+  <footer class="footer">
+    <span class="copyright">© 2026 Nathan Stevens</span>
+    <div class="footer-links">
+      <a href="../index.html">Work</a>
+      <a href="https://github.com/NathanS7878" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/nathans78" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:98899dragons@gmail.com">Email</a>
+    </div>
+  </footer>
+
+</body>
+</html>

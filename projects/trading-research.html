@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Systematic Trading Research — Nathan Stevens</title>
+  <meta name="description" content="A no-lookahead, cost-modeled quantitative backtesting pipeline in pure Python, and the semi-automated execution system built on top of it.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,72,400;0,72,500;1,72,400;1,72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <article class="detail">
+    <div class="detail-inner">
+
+      <a class="back-link" href="../index.html#work">← Work</a>
+
+      <header class="detail-header reveal-load">
+        <h1>Systematic Trading Research &amp; Execution System</h1>
+        <p class="subtitle">A quantitative research pipeline that tests strategies honestly, and the semi-automated execution system built on the one that survived.</p>
+
+        <div class="chips">
+          <span>Python</span><span>Alpaca API</span><span>Yahoo Finance API</span><span>robin_stocks</span><span>Task Scheduler</span>
+        </div>
+
+        <p class="result-line">Maximum drawdown −30% versus −55% for buy-and-hold, at roughly matched CAGR, over 33 years spanning four major crashes.</p>
+      </header>
+
+      <p class="pull">Most of this project is a negative result, and that's the point. Four classic intraday strategies were tested honestly and none of them worked. Reporting that is more useful than another backtest curve.</p>
+
+      <h2>The problem</h2>
+      <p>Backtests lie. Lookahead bias, survivorship bias, untested parameters, and ignored transaction costs make almost any strategy look profitable on paper. The goal here was to build a pipeline where those failure modes are <strong>structurally impossible</strong>, then see what survives.</p>
+      <p>What survived is smaller than what most backtests claim, and the gap between those two things is the actual finding.</p>
+
+      <h2>How it works</h2>
+      <ul>
+        <li><strong>Pure Python, standard library only</strong> — no pandas or numpy in the core. Indicators, the backtest loop, and the risk metrics are hand-implemented so every calculation is inspectable.</li>
+        <li><strong>No lookahead, enforced by design.</strong> A signal is computed on a bar's close and executes at the next bar's open. No bar can inform a trade that happens inside it.</li>
+        <li><strong>Costs on every fill.</strong> One basis point of slippage per intraday fill, five basis points per unit of turnover at each swing rebalance. Retail commissions are $0 on the brokers used, so the modeled friction is slippage and spread.</li>
+        <li><strong>Chronological 60/40 train/test split</strong>, with the <em>full parameter surface</em> reported — every SMA window from 100–250 days, every top-K from 2–4 — rather than the single best-performing setting. That way a reader can see whether a result is a ridge or a spike.</li>
+        <li><strong>A survivorship-bias-free universe.</strong> The nine original Select Sector SPDR ETFs form a complete, non-overlapping partition of the S&amp;P 500 with common history back to 1998. XLRE (2015) and XLC (2018) were excluded on purpose so the basket's history still spans every major crash of the last 25 years.</li>
+      </ul>
+
+      <h2>What I measured</h2>
+      <p>Full sample 1998–2026, daily, net of modeled costs. Strategy selection was made on the earlier 60% of the sample and validated on the held-out 40%; the table below is the full period, reported for comparability.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Strategy</th><th>CAGR</th><th>Sharpe</th><th>Max drawdown</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Buy &amp; hold SPY</td><td>10.9%</td><td>0.65</td><td>−55.2%</td></tr>
+            <tr><td>SMA-200 trend timing</td><td>8.2%</td><td>0.72</td><td>−29.4%</td></tr>
+            <tr><td>Time-series momentum (12m)</td><td>9.6%</td><td>0.73</td><td>−31.4%</td></tr>
+            <tr class="highlight"><td>Dual momentum (top-3)</td><td>9.8%</td><td>0.69</td><td>−30.2%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">Robust across top-2 / top-3 / top-4 holdings. The intraday phase is not in this table because it produced no edge — buy-and-hold beat every strategy on every symbol out-of-sample, and higher-volatility names (TSLA, NVDA) amplified losses rather than returns.</p>
+
+      <h2>Two things worth calling out</h2>
+      <p><strong>A +48% result was thrown away.</strong> A TSLA breakout strategy showed +48% in the test window. It was rejected as multiple-testing noise, because it <em>lost</em> money in-sample and therefore could never have been selected in advance. It is not in the results.</p>
+      <p><strong>A broker API was serving fabricated prices.</strong> One data source returned interpolated synthetic 5-minute bars beyond roughly 4.5 months of real history. These were detected and filtered so no backtest ever ran on prices that didn't happen.</p>
+
+      <h2>Deployment</h2>
+      <p>The surviving strategy runs as a scheduled, human-in-the-loop system: a monthly signal generator refreshes data and emits the target allocation, and a rebalance calculator reads live brokerage positions and computes exact fractional-share orders behind a review → type-to-confirm gate.</p>
+      <p>Execution safety is layered: a <code>DRY_RUN</code> mode, a tradable-ticker allowlist, a per-order dollar cap, a sub-$1 no-trade band, sells-before-buys sequencing, and per-order error handling that never leaves the account in an unknown state. Building it surfaced a real bug — the brokerage library defaulted to the wrong account — which is now handled by explicit account routing. Credentials live in a gitignored env file.</p>
+
+      <h2>Limitations</h2>
+      <ul>
+        <li><strong>It did not beat the market.</strong> Dual momentum underperformed buy-and-hold on CAGR by about 1.1 points a year. It is crash insurance, and the foregone return is the premium.</li>
+        <li><strong>The Sharpe difference is not statistically significant.</strong> 0.69 against 0.65 sounds like a win, but the standard error on a Sharpe estimate over 27 years is roughly 0.21. A 0.04 gap is noise. The drawdown reduction — −55% to −30% — is the result I would actually defend.</li>
+        <li><strong>The edge is concentrated in crash regimes.</strong> In the calmer, most recent out-of-sample window, plain buy-and-hold wins on Sharpe. The strategy earns its keep in 2000, 2008, and 2020 and drags the rest of the time.</li>
+        <li><strong>Published support doesn't fully escape selection bias.</strong> Dual momentum is Antonacci's published strategy, tested here on the asset class it was published on. The academic literature is itself survivorship-biased — strategies that failed didn't become papers. So the out-of-sample split tests my parameter choices more than it tests the underlying hypothesis.</li>
+        <li><strong>No market-impact modeling.</strong> The flat slippage haircut is defensible for instruments as liquid as SPY and the sector SPDRs. It would not be for small caps.</li>
+        <li><strong>Setting the risk-free rate to zero</strong> across 1998–2026 penalizes a strategy that sits in cash during downturns, so the reported Sharpe is, if anything, conservative for dual momentum.</li>
+      </ul>
+
+      <p class="disclaimer">Built for research and personal use. Backtested results are historical and are not a prediction of future performance. The live component is a semi-automated, human-approved system, not an autonomous trading bot. Nothing here is investment advice.</p>
+
+    </div>
+  </article>
+
+  <footer class="footer">
+    <span class="copyright">© 2026 Nathan Stevens</span>
+    <div class="footer-links">
+      <a href="../index.html">Work</a>
+      <a href="https://github.com/NathanS7878" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/nathans78" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:98899dragons@gmail.com">Email</a>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nathan S. — CS Portfolio</title>
-  <meta name="description" content="Selected work in systems programming, AI infrastructure & real-time graphics.">
+  <title>Nathan Stevens — CS Portfolio</title>
+  <meta name="description" content="Systems programming, AI infrastructure, and quantitative research. CS junior at CU Denver, available for Summer 2027 internships.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,72,400;0,72,500;1,72,400;1,72,500&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 <body>
 
   <nav class="nav reveal-load">
-    <a class="wordmark" href="#top">Nathan S.</a>
+    <a class="wordmark" href="#top">Nathan Stevens</a>
     <div class="nav-links">
       <a href="#work">Work</a>
       <a href="#about">About</a>
@@ -22,7 +22,7 @@
   </nav>
 
   <header class="hero" id="top">
-    <h1 class="reveal-load delay-1">Selected work in systems programming, AI infrastructure &amp; real-time&nbsp;graphics.</h1>
+    <h1 class="reveal-load delay-1">Systems programming, AI infrastructure, and quantitative&nbsp;research.</h1>
   </header>
 
   <main id="work" class="case-list">
@@ -31,14 +31,15 @@
     <article class="case reveal">
       <span class="case-index">01</span>
       <div class="case-body">
-        <h2>MiniDynamo — KV-cache-aware LLM inference router</h2>
-        <p>A distributed inference-serving system modeled on NVIDIA Dynamo: an async Rust frontend (axum/Tokio) routing OpenAI-compatible requests across a pool of Python model workers. It tokenizes each prompt, hashes it into prefix-dependent blocks, and routes to the worker holding the longest cached prefix — cutting time-to-first-token 23% versus round-robin at 91% cache reuse.</p>
+        <h2><a class="case-title-link" href="projects/minidynamo.html">MiniDynamo — KV-cache-aware LLM inference router</a></h2>
+        <p><strong>91% cache reuse, 23% lower p50 time-to-first-token</strong> versus round-robin. A distributed Rust + Python serving system modeled on NVIDIA Dynamo, routing each request to the worker that already holds its cached prefix.</p>
         <div class="case-tags">
-          <span>Rust</span><span aria-hidden="true">·</span><span>Python</span><span aria-hidden="true">·</span><span>Distributed systems</span>
+          <span>Rust</span><span aria-hidden="true">·</span><span>Tokio</span><span aria-hidden="true">·</span><span>Python</span><span aria-hidden="true">·</span><span>Prometheus</span>
         </div>
+        <a class="repo-link" href="https://github.com/NathanS7878/MiniDynamo" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
-      <a class="case-thumb thumb-dynamo" href="https://github.com/NathanS7878/MiniDynamo" aria-label="MiniDynamo project on GitHub">
-        <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+      <div class="case-thumb thumb-dynamo" aria-hidden="true">
+        <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice">
           <line class="link" x1="150" y1="130" x2="292" y2="70"/>
           <line class="link" x1="150" y1="130" x2="292" y2="130"/>
           <line class="link" x1="150" y1="130" x2="292" y2="190"/>
@@ -54,21 +55,62 @@
           <circle class="pkt pkt-c" cx="150" cy="130" r="3"/>
         </svg>
         <span class="thumb-label">kv-aware routing</span>
-      </a>
+      </div>
     </article>
 
-    <!-- 02 · Gravity -->
+    <!-- 02 · Systematic Trading Research & Execution System -->
     <article class="case reveal">
       <span class="case-index">02</span>
       <div class="case-body">
-        <h2>Gravity — 3D N-body orbital simulator</h2>
-        <p>A real-time Newtonian gravity simulation in C++. Started as a headless 2D integrator writing orbits to CSV, then grew into a full 3D visualizer built with Raylib — softened force computation, semi-implicit Euler integration, and bodies orbiting a central mass in a perspective camera.</p>
+        <h2><a class="case-title-link" href="projects/trading-research.html">Systematic Trading Research &amp; Execution System</a></h2>
+        <p><strong>Maximum drawdown cut from −55% to −30%</strong> at roughly matched CAGR across 33 years. A no-lookahead, cost-modeled backtesting engine in pure Python: four classic intraday strategies tested honestly and found to have no edge, then a dual-momentum strategy validated out-of-sample.</p>
         <div class="case-tags">
-          <span>C++</span><span aria-hidden="true">·</span><span>Raylib</span><span aria-hidden="true">·</span><span>Physics</span>
+          <span>Python</span><span aria-hidden="true">·</span><span>Alpaca API</span><span aria-hidden="true">·</span><span>robin_stocks</span><span aria-hidden="true">·</span><span>Quant research</span>
         </div>
       </div>
-      <a class="case-thumb thumb-gravity" href="https://github.com/NathanS7878/Projects" aria-label="Gravity project on GitHub">
-        <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+      <div class="case-thumb thumb-equity" aria-hidden="true">
+        <svg viewBox="0 0 420 260" preserveAspectRatio="none">
+          <path class="eq-grid" d="M0 65H420M0 130H420M0 195H420"/>
+          <path class="eq-line eq-bh" d="M8 232 L52 206 L74 214 L96 188 L118 236 L140 214 L166 176 L188 190 L210 150 L232 224 L254 176 L276 132 L298 110 L320 148 L342 96 L364 74 L390 44"/>
+          <path class="eq-line eq-dm" d="M8 232 L52 210 L74 206 L96 194 L118 198 L140 190 L166 168 L188 172 L210 148 L232 166 L254 146 L276 122 L298 104 L320 118 L342 92 L364 76 L390 54"/>
+        </svg>
+        <span class="thumb-label">−30% vs −55% drawdown</span>
+      </div>
+    </article>
+
+    <!-- 03 · nano-infer -->
+    <article class="case reveal">
+      <span class="case-index">03</span>
+      <div class="case-body">
+        <h2>
+          <a class="case-title-link" href="projects/nano-infer.html">nano-infer — from-scratch LLM inference engine</a>
+        </h2>
+        <p><span class="badge">In progress</span> <strong>Measured: inter-token latency stays flat at ~51 ms from batch 1 to batch 32</strong> — decode is memory-bound, and that waste is what the engine attacks. Transformer inference without <code>generate()</code>, vLLM, or FlashAttention: paged KV cache, continuous batching, hand-written CUDA kernels, INT4 quantization.</p>
+        <div class="case-tags">
+          <span>CUDA</span><span aria-hidden="true">·</span><span>C++</span><span aria-hidden="true">·</span><span>Python</span><span aria-hidden="true">·</span><span>PyTorch</span>
+        </div>
+      </div>
+      <div class="case-thumb thumb-kv" aria-hidden="true">
+        <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice">
+          <g class="kv-pages"></g>
+        </svg>
+        <span class="thumb-label">paged kv cache</span>
+      </div>
+    </article>
+
+    <!-- 04 · Gravity -->
+    <article class="case reveal">
+      <span class="case-index">04</span>
+      <div class="case-body">
+        <h2><a class="case-title-link" href="projects/gravity.html">Gravity — 3D N-body orbital simulator</a></h2>
+        <p>Real-time Newtonian N-body simulation in C++ with <strong>softened force computation and semi-implicit Euler integration</strong>, grown from a headless 2D CSV integrator into a 3D Raylib visualizer.</p>
+        <div class="case-tags">
+          <span>C++</span><span aria-hidden="true">·</span><span>Raylib</span><span aria-hidden="true">·</span><span>Numerical methods</span>
+        </div>
+        <a class="repo-link" href="https://github.com/NathanS7878/Projects-2.0/tree/main/3D%20Gravity" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+      <div class="case-thumb thumb-gravity" aria-hidden="true">
+        <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice">
           <ellipse class="orbit-ring" cx="210" cy="130" rx="150" ry="58"/>
           <ellipse class="orbit-ring" cx="210" cy="130" rx="100" ry="38"/>
           <ellipse class="orbit-ring" cx="210" cy="130" rx="55" ry="21"/>
@@ -78,52 +120,7 @@
           <g class="orbit orbit-c"><circle class="planet" cx="265" cy="130" r="3"/></g>
         </svg>
         <span class="thumb-label">n-body simulation</span>
-      </a>
-    </article>
-
-    <!-- 03 · Snake -->
-    <article class="case reveal">
-      <span class="case-index">03</span>
-      <div class="case-body">
-        <h2>Snake — grid renderer &amp; game loop</h2>
-        <p>The classic, rebuilt from scratch on a Raylib game loop. A fixed-timestep grid renderer drives the board, with movement, growth, and collision handled cell-by-cell — an exercise in game state, input handling, and immediate-mode drawing.</p>
-        <div class="case-tags">
-          <span>C++</span><span aria-hidden="true">·</span><span>Raylib</span><span aria-hidden="true">·</span><span>Game dev</span>
-        </div>
       </div>
-      <a class="case-thumb thumb-snake" href="https://github.com/NathanS7878/Projects" aria-label="Snake project on GitHub">
-        <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
-          <g class="grid-lines"></g>
-          <g class="snake">
-            <rect class="seg s4" x="0" y="120" width="20" height="20"/>
-            <rect class="seg s3" x="20" y="120" width="20" height="20"/>
-            <rect class="seg s2" x="40" y="120" width="20" height="20"/>
-            <rect class="seg s1" x="60" y="120" width="20" height="20"/>
-          </g>
-          <rect class="food" x="340" y="120" width="20" height="20"/>
-        </svg>
-        <span class="thumb-label">snake</span>
-      </a>
-    </article>
-
-    <!-- 04 · Rock Paper Scissors -->
-    <article class="case reveal">
-      <span class="case-index">04</span>
-      <div class="case-body">
-        <h2>Rock Paper Scissors — console game</h2>
-        <p>A terminal game against the computer, and the project where the fundamentals clicked: control flow, pseudo-random choice, input validation, and structuring a program into clean, testable functions.</p>
-        <div class="case-tags">
-          <span>C++</span><span aria-hidden="true">·</span><span>CLI</span><span aria-hidden="true">·</span><span>Fundamentals</span>
-        </div>
-      </div>
-      <a class="case-thumb thumb-rps" href="https://github.com/NathanS7878/Projects" aria-label="Rock Paper Scissors project on GitHub">
-        <div class="rps-words" aria-hidden="true">
-          <span class="rps-word w1">&gt; rock</span>
-          <span class="rps-word w2">&gt; paper</span>
-          <span class="rps-word w3">&gt; scissors</span>
-        </div>
-        <span class="thumb-label">you win!</span>
-      </a>
     </article>
 
   </main>
@@ -132,13 +129,15 @@
     <span class="case-index" aria-hidden="true">—</span>
     <div class="case-body">
       <h2>About</h2>
-      <p>I'm Nathan, a computer science student who likes building things from first principles — simulations, games, and graphics in C++. Right now I'm digging into AI and quantum computing, and where the two might take each other.</p>
+      <p>I'm a computer science junior at CU Denver (3.98 GPA, graduating December 2028). I work in Rust, C++, Python, and CUDA, and I'm most interested in LLM inference performance and quantitative research.</p>
+      <p>The projects here are built without frameworks where the framework is the thing worth understanding — a router written against the cache instead of around it, a backtest engine with the indicators hand-implemented, an inference engine that doesn't call <code>generate()</code>.</p>
+      <p class="availability">Available for Summer 2027 internships.</p>
     </div>
     <div></div>
   </section>
 
   <footer class="footer" id="contact">
-    <span class="copyright">© 2026 Nathan S.</span>
+    <span class="copyright">© 2026 Nathan Stevens</span>
     <div class="footer-links">
       <a href="https://github.com/NathanS7878" target="_blank" rel="noopener">GitHub</a>
       <a href="https://www.linkedin.com/in/nathans78" target="_blank" rel="noopener">LinkedIn</a>

@@ -20,18 +20,33 @@
   rows.forEach(el => observer.observe(el));
 })();
 
-// Draw the background grid for the Snake thumbnail (20px cells, like the game).
+// Build the KV-cache page grid for the nano-infer thumbnail. Blocks are laid
+// out in rows of pages; a subset animates to suggest cache blocks filling.
 (function () {
-  const grid = document.querySelector('.thumb-snake .grid-lines');
-  if (!grid) return;
+  const host = document.querySelector('.thumb-kv .kv-pages');
+  if (!host) return;
+
   const ns = 'http://www.w3.org/2000/svg';
-  let d = '';
-  for (let x = 0; x <= 420; x += 20) d += `M${x} 0V260`;
-  for (let y = 0; y <= 260; y += 20) d += `M0 ${y}H420`;
-  const path = document.createElementNS(ns, 'path');
-  path.setAttribute('d', d);
-  path.setAttribute('stroke', 'oklch(0.16 0.006 60)');
-  path.setAttribute('stroke-width', '1');
-  path.setAttribute('fill', 'none');
-  grid.appendChild(path);
+  const cols = 12, rows = 7, size = 22, gap = 6;
+  const w = cols * size + (cols - 1) * gap;
+  const h = rows * size + (rows - 1) * gap;
+  const ox = (420 - w) / 2, oy = (260 - h) / 2;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('x', ox + c * (size + gap));
+      rect.setAttribute('y', oy + r * (size + gap));
+      rect.setAttribute('width', size);
+      rect.setAttribute('height', size);
+      rect.setAttribute('rx', '2');
+      // Fill roughly the first two-thirds of each row, staggered per block.
+      const filled = c < 4 + ((r * 5) % 5);
+      rect.setAttribute('class', filled ? 'page on' : 'page');
+      if (filled) {
+        rect.style.animationDelay = `${(r * 0.16 + c * 0.09).toFixed(2)}s`;
+      }
+      host.appendChild(rect);
+    }
+  }
 })();

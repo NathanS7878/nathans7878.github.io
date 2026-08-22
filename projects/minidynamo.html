@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiniDynamo — Nathan Stevens</title>
+  <meta name="description" content="A KV-cache-aware LLM inference router in Rust and Python, modeled on NVIDIA Dynamo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,72,400;0,72,500;1,72,400;1,72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <article class="detail">
+    <div class="detail-inner">
+
+      <a class="back-link" href="../index.html#work">← Work</a>
+
+      <header class="detail-header reveal-load">
+        <h1>MiniDynamo</h1>
+        <p class="subtitle">A KV-cache-aware LLM inference router — a distributed Rust and Python serving system modeled on NVIDIA Dynamo.</p>
+
+        <div class="chips">
+          <span>Rust</span><span>Tokio</span><span>axum</span><span>Python</span><span>FastAPI</span><span>Prometheus</span>
+        </div>
+
+        <p class="result-line">91% cache reuse · 23% lower p50 time-to-first-token · higher throughput, against a round-robin baseline.</p>
+      </header>
+
+      <h2>The problem</h2>
+      <p>When many users hit an LLM server with prompts that share a common prefix — a system prompt, a document, a conversation history — the KV cache for that prefix can be reused instead of recomputed. But only if the request lands on the worker that already has it.</p>
+      <p>A round-robin load balancer scatters those requests across the pool and throws the cache away. The work of recomputing a prefix that another machine already holds is pure waste, and it shows up directly as time-to-first-token.</p>
+
+      <h2>How it works</h2>
+      <ul>
+        <li>An <strong>async Rust frontend</strong> (axum on Tokio) exposes an OpenAI-compatible streaming API.</li>
+        <li>Each incoming prompt is tokenized and hashed into <strong>prefix-dependent blocks</strong>, so two prompts that share an opening share their leading block hashes.</li>
+        <li>The router maintains a <strong>mirror of which worker holds which cached prefix blocks</strong> and routes each request to the worker with the longest matching prefix — falling back to least-loaded on ties.</li>
+        <li>Requests are proxied to a pool of <strong>Python (FastAPI) model workers</strong> with streaming passthrough, so tokens reach the client as they are produced rather than after the full completion.</li>
+      </ul>
+
+      <h2>What I measured</h2>
+      <p>A concurrent benchmark harness compares routing policies head to head on the same workload, so the only variable is the routing decision.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Routing policy</th><th>Cache reuse</th><th>p50 TTFT</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Round-robin (baseline)</td><td>—</td><td>baseline</td></tr>
+            <tr class="highlight"><td>KV-cache-aware</td><td>91%</td><td>−23%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">Throughput improved alongside the latency result. Both policies were run against the same prompt workload and the same worker pool.</p>
+
+      <h2>What I got wrong</h2>
+      <p>The router's cache mirror could <strong>drift from reality</strong>. When a client disconnected early, the worker's actual cache state and the router's model of it diverged, so subsequent routing decisions were made on stale information — sending requests to a worker that no longer held what the router thought it held.</p>
+      <p>Prometheus instrumentation is what surfaced it: the cache-hit rate decayed over long runs in a way that didn't match the workload. A metric disagreeing with a mental model is a better bug report than any stack trace. Fixed by reconciling state on disconnect.</p>
+
+      <h2>Limitations</h2>
+      <ul>
+        <li><strong>Single-node worker pool</strong>, with no cross-node cache sharing. Scaling past one machine would need a distributed view of cache residency, which is a materially harder problem than the one solved here.</li>
+        <li><strong>The prefix-block hash assumes deterministic tokenization.</strong> A tokenizer change invalidates the mirror's assumptions.</li>
+        <li><strong>Benchmarks are on one hardware configuration.</strong> The 23% figure is what this workload did on this machine, not a general claim about cache-aware routing.</li>
+      </ul>
+
+      <h2>Related</h2>
+      <p>MiniDynamo decides <em>which worker</em> serves a request. <a class="inline-link" href="nano-infer.html">nano-infer</a> is what a worker does on the GPU once the request arrives.</p>
+
+      <div class="detail-links">
+        <a href="https://github.com/NathanS7878/MiniDynamo" target="_blank" rel="noopener">GitHub repo ↗</a>
+      </div>
+
+    </div>
+  </article>
+
+  <footer class="footer">
+    <span class="copyright">© 2026 Nathan Stevens</span>
+    <div class="footer-links">
+      <a href="../index.html">Work</a>
+      <a href="https://github.com/NathanS7878" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/nathans78" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:98899dragons@gmail.com">Email</a>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nano-infer — Nathan Stevens</title>
+  <meta name="description" content="A from-scratch single-GPU LLM inference engine with custom CUDA kernels — in progress.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,72,400;0,72,500;1,72,400;1,72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <article class="detail">
+    <div class="detail-inner">
+
+      <a class="back-link" href="../index.html#work">← Work</a>
+
+      <header class="detail-header reveal-load">
+        <span class="badge">In progress</span>
+        <h1>nano-infer</h1>
+        <p class="subtitle">A from-scratch single-GPU LLM inference engine with custom CUDA kernels — transformer inference without <code>generate()</code>, vLLM, TensorRT-LLM, or FlashAttention.</p>
+
+        <div class="chips">
+          <span>CUDA</span><span>C++</span><span>Python</span><span>PyTorch</span>
+        </div>
+
+        <p class="result-line">Measured: inter-token latency stays flat at ~51 ms from batch 1 to batch 32. Decode is memory-bound, and that waste is what the engine is built to attack.</p>
+      </header>
+
+      <h2>Status — honest version</h2>
+      <p><strong>Phase 0 (ground truth) is complete.</strong> The benchmark harness and the correctness answer key exist and are stable: CUDA-synchronized timing with warmup, run-to-run variance between 1.0% and 2.3%, reference logits captured from HuggingFace and committed to disk, and a HuggingFace baseline recorded on the target hardware.</p>
+      <p><strong>Phase 1 onward — the engine itself — has not been built yet.</strong> The paged KV cache, continuous batching, the custom kernels, and quantization are designed but not written. There are no nano-infer performance numbers on this page because none exist yet, and a placeholder table with invented figures would undo the point of the project.</p>
+
+      <h2>The problem</h2>
+      <p>Token generation on a GPU is <strong>memory-bandwidth-bound, not compute-bound</strong>. Most of the win comes from moving less data, not from doing less math. This project goes one layer below the frameworks to see where the time actually goes.</p>
+      <p>The rule the project holds itself to: HuggingFace is used for weights and tokenizer download only. The forward pass, the sampling loop, and the cache are mine. No vLLM, TensorRT-LLM, FlashAttention, or xformers — those are what it benchmarks <em>against</em>.</p>
+
+      <h2>What's measured so far</h2>
+      <p>The baseline below is <strong>HuggingFace's <code>generate()</code>, not nano-infer</strong>. It is the ruler, captured before building the thing being measured, so that every later speed claim has something honest to compare against.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Batch</th><th>Tokens/sec</th><th>TTFT (ms)</th><th>Inter-token (ms)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>19.5</td><td>63.0</td><td>51.3</td></tr>
+            <tr><td>4</td><td>76.9</td><td>59.9</td><td>51.9</td></tr>
+            <tr><td>16</td><td>313.3</td><td>67.3</td><td>50.9</td></tr>
+            <tr><td>32</td><td>621.5</td><td>68.3</td><td>51.4</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">HuggingFace <code>generate()</code> baseline. RTX 3070 (8 GB, Ampere sm_86, 448 GB/s peak bandwidth), Qwen2.5-0.5B-Instruct, fp16, 128 new tokens.</p>
+
+      <p><strong>The observation that motivates the project:</strong> inter-token latency is flat at roughly 51 ms across every batch size, so tokens per second scales almost linearly with batch. The per-step cost is loading weights out of VRAM, and that is paid once per step no matter how many sequences are in flight. Batch-1 serving therefore wastes most of the GPU.</p>
+
+      <h2>Planned and in flight</h2>
+      <ul>
+        <li><strong>Paged KV cache and continuous batching</strong> — so sequences can join and leave a batch mid-flight instead of padding to the longest.</li>
+        <li><strong>Fused kernels</strong> — RMSNorm, SwiGLU, RoPE, and an online-softmax decode attention kernel, hand-written rather than composed from framework ops.</li>
+        <li><strong>INT8/INT4 weight-only quantization</strong> with a fused dequantize-matmul kernel, since moving fewer bytes is the whole game.</li>
+        <li><strong>Benchmarks reported as achieved memory bandwidth</strong> against the card's 448 GB/s theoretical peak, rather than as a bare speedup multiple.</li>
+      </ul>
+
+      <h2>Limitations</h2>
+      <ul>
+        <li><strong>The engine does not exist yet.</strong> Everything past the harness and the parity tests is unbuilt. This page will carry real numbers or none.</li>
+        <li><strong>One GPU, one model, one machine.</strong> All figures come from a single RTX 3070 running Qwen2.5-0.5B. Results on an 8 GB consumer card do not necessarily transfer to datacenter hardware, where the bandwidth-to-compute ratio is different.</li>
+        <li><strong>Small model, amplified overheads.</strong> A 0.5B model exaggerates per-step fixed costs relative to a production-size model, so speedups measured here would need re-checking at scale.</li>
+        <li><strong>Quantization will cost quality</strong>, and that regression has to be reported with numbers rather than waved past.</li>
+      </ul>
+
+      <h2>Related</h2>
+      <p><a class="inline-link" href="minidynamo.html">MiniDynamo</a> decides <em>which worker</em> serves a request; nano-infer is what that worker actually does on the GPU.</p>
+
+      <p class="disclaimer">No public repository yet — this page is the current record of the project. It will link to the repo once the engine phase is pushed.</p>
+
+    </div>
+  </article>
+
+  <footer class="footer">
+    <span class="copyright">© 2026 Nathan Stevens</span>
+    <div class="footer-links">
+      <a href="../index.html">Work</a>
+      <a href="https://github.com/NathanS7878" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/nathans78" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:98899dragons@gmail.com">Email</a>
+    </div>
+  </footer>
+
+</body>
+</html>
