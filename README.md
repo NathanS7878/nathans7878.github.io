@@ -56,5 +56,6 @@ projects/           one detail page per project
   footer pointing to `/Nathan-Stevens-Resume.pdf`. That file does not exist, so
   the link is intentionally omitted rather than shipped broken. Drop the PDF in
   the repo root and add the link in the nav (`index.html`) and each footer.
-- **nano-infer and the trading system have no public repos.** Both cards link to
-  their detail page only. Add a `GitHub ↗` link to each once the repos are pushed.
+- **The trading system has no public repo.** Its card links to the detail page
+  only. Add a `GitHub ↗` link once the repo is pushed. (nano-infer is public and
+  linked.)

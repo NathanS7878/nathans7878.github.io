@@ -25,7 +25,7 @@
           <span>Rust</span><span>Tokio</span><span>axum</span><span>Python</span><span>FastAPI</span><span>Prometheus</span>
         </div>
 
-        <p class="result-line">91% cache reuse · 23% lower p50 time-to-first-token · higher throughput, against a round-robin baseline.</p>
+        <p class="result-line">~90% cache reuse (vs 69% round-robin) · ~38% lower p50 time-to-first-token · higher throughput, pooled over repeated runs.</p>
       </header>
 
       <h2>The problem</h2>
@@ -36,8 +36,8 @@
       <ul>
         <li>An <strong>async Rust frontend</strong> (axum on Tokio) exposes an OpenAI-compatible streaming API.</li>
         <li>Each incoming prompt is tokenized and hashed into <strong>prefix-dependent blocks</strong>, so two prompts that share an opening share their leading block hashes.</li>
-        <li>The router maintains a <strong>mirror of which worker holds which cached prefix blocks</strong> and routes each request to the worker with the longest matching prefix — falling back to least-loaded on ties.</li>
-        <li>Requests are proxied to a pool of <strong>Python (FastAPI) model workers</strong> with streaming passthrough, so tokens reach the client as they are produced rather than after the full completion.</li>
+        <li>The router maintains a <strong>mirror of which worker holds which cached prefix blocks</strong> and scores each worker as <code>overlap − λ·load</code> — the longest matching prefix wins unless that worker is already busy, so a popular prefix can't pile every request onto one machine.</li>
+        <li>Requests are proxied to a pool of <strong>Python (FastAPI) workers</strong> — each with a real LRU cache of KV blocks and a simulated model (prefill cost per uncached block, decode cost per token) — with streaming passthrough, so tokens reach the client as they are produced rather than after the full completion.</li>
       </ul>
 
       <h2>What I measured</h2>
@@ -49,22 +49,23 @@
             <tr><th>Routing policy</th><th>Cache reuse</th><th>p50 TTFT</th></tr>
           </thead>
           <tbody>
-            <tr><td>Round-robin (baseline)</td><td>—</td><td>baseline</td></tr>
-            <tr class="highlight"><td>KV-cache-aware</td><td>91%</td><td>−23%</td></tr>
+            <tr><td>Round-robin (baseline)</td><td>69%</td><td>baseline</td></tr>
+            <tr class="highlight"><td>KV-cache-aware</td><td>90%</td><td>−38%</td></tr>
           </tbody>
         </table>
       </div>
       <p class="caption">Throughput improved alongside the latency result. Both policies were run against the same prompt workload and the same worker pool.</p>
 
       <h2>What I got wrong</h2>
-      <p>The router's cache mirror could <strong>drift from reality</strong>. When a client disconnected early, the worker's actual cache state and the router's model of it diverged, so subsequent routing decisions were made on stale information — sending requests to a worker that no longer held what the router thought it held.</p>
-      <p>Prometheus instrumentation is what surfaced it: the cache-hit rate decayed over long runs in a way that didn't match the workload. A metric disagreeing with a mental model is a better bug report than any stack trace. Fixed by reconciling state on disconnect.</p>
+      <p>The router's cache mirror could <strong>drift from reality</strong>. When a client disconnected early, the worker's actual cache state and the router's model of it diverged, so subsequent routing decisions were made on stale information — the router didn't know about cache that a worker really held.</p>
+      <p>Prometheus instrumentation is what surfaced it: the cache-hit rate read 0% because the mirror was only updated when a response stream <em>finished</em> — and the benchmark client disconnects right after the first token, so the update never ran. Fixed by updating the mirror at <strong>dispatch time</strong> (the moment a worker receives the request), not at stream completion, so an early disconnect can't leave it stale.</p>
 
       <h2>Limitations</h2>
       <ul>
+        <li><strong>The workers are simulated.</strong> They keep a real KV-block cache, but model compute with timed sleeps, so the benchmark tests routing decisions under a cost model rather than a real model's latency. A real backend (llama.cpp, or nano-infer) is the next step.</li>
         <li><strong>Single-node worker pool</strong>, with no cross-node cache sharing. Scaling past one machine would need a distributed view of cache residency, which is a materially harder problem than the one solved here.</li>
         <li><strong>The prefix-block hash assumes deterministic tokenization.</strong> A tokenizer change invalidates the mirror's assumptions.</li>
-        <li><strong>Benchmarks are on one hardware configuration.</strong> The 23% figure is what this workload did on this machine, not a general claim about cache-aware routing.</li>
+        <li><strong>Benchmarks are on one hardware configuration.</strong> The ~38% figure is what this workload did on this machine, not a general claim about cache-aware routing. Under a saturating workload the gain shrinks toward zero as the load-aware term correctly trades cache affinity for balance.</li>
       </ul>
 
       <h2>Related</h2>

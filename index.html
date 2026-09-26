@@ -32,7 +32,7 @@
       <span class="case-index">01</span>
       <div class="case-body">
         <h2><a class="case-title-link" href="projects/minidynamo.html">MiniDynamo — KV-cache-aware LLM inference router</a></h2>
-        <p><strong>91% cache reuse, 23% lower p50 time-to-first-token</strong> versus round-robin. A distributed Rust + Python serving system modeled on NVIDIA Dynamo, routing each request to the worker that already holds its cached prefix.</p>
+        <p><strong>~90% cache reuse, ~38% lower p50 time-to-first-token</strong> versus round-robin. A distributed Rust + Python serving system modeled on NVIDIA Dynamo, routing each request to the worker that already holds its cached prefix.</p>
         <div class="case-tags">
           <span>Rust</span><span aria-hidden="true">·</span><span>Tokio</span><span aria-hidden="true">·</span><span>Python</span><span aria-hidden="true">·</span><span>Prometheus</span>
         </div>
@@ -85,10 +85,11 @@
         <h2>
           <a class="case-title-link" href="projects/nano-infer.html">nano-infer — from-scratch LLM inference engine</a>
         </h2>
-        <p><span class="badge">In progress</span> <strong>Measured: inter-token latency stays flat at ~51 ms from batch 1 to batch 32</strong> — decode is memory-bound, and that waste is what the engine attacks. Transformer inference without <code>generate()</code>, vLLM, or FlashAttention: paged KV cache, continuous batching, hand-written CUDA kernels, INT4 quantization.</p>
+        <p><strong>9.4× HuggingFace throughput at batch 32; 78% of peak memory bandwidth</strong> on an RTX 3070. Transformer inference without <code>generate()</code>, vLLM, or FlashAttention: paged KV cache, continuous batching, four hand-written CUDA kernels, CUDA-graph decode, INT8/INT4 quantization.</p>
         <div class="case-tags">
           <span>CUDA</span><span aria-hidden="true">·</span><span>C++</span><span aria-hidden="true">·</span><span>Python</span><span aria-hidden="true">·</span><span>PyTorch</span>
         </div>
+        <a class="repo-link" href="https://github.com/NathanS7878/nano-infer" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
       <div class="case-thumb thumb-kv" aria-hidden="true">
         <svg viewBox="0 0 420 260" preserveAspectRatio="xMidYMid slice">

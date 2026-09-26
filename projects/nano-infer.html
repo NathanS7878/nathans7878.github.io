@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>nano-infer — Nathan Stevens</title>
-  <meta name="description" content="A from-scratch single-GPU LLM inference engine with custom CUDA kernels — in progress.">
+  <meta name="description" content="A from-scratch single-GPU LLM inference engine with custom CUDA kernels — 9.4× HuggingFace throughput on an RTX 3070.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,72,400;0,72,500;1,72,400;1,72,500&display=swap" rel="stylesheet">
@@ -18,7 +18,6 @@
       <a class="back-link" href="../index.html#work">← Work</a>
 
       <header class="detail-header reveal-load">
-        <span class="badge">In progress</span>
         <h1>nano-infer</h1>
         <p class="subtitle">A from-scratch single-GPU LLM inference engine with custom CUDA kernels — transformer inference without <code>generate()</code>, vLLM, TensorRT-LLM, or FlashAttention.</p>
 
@@ -26,57 +25,57 @@
           <span>CUDA</span><span>C++</span><span>Python</span><span>PyTorch</span>
         </div>
 
-        <p class="result-line">Measured: inter-token latency stays flat at ~51 ms from batch 1 to batch 32. Decode is memory-bound, and that waste is what the engine is built to attack.</p>
+        <p class="result-line">9.40× HuggingFace <code>generate()</code> throughput at batch 32 · 78.3% of peak memory bandwidth on Qwen2.5-1.5B · 165 parity tests.</p>
       </header>
 
-      <h2>Status — honest version</h2>
-      <p><strong>Phase 0 (ground truth) is complete.</strong> The benchmark harness and the correctness answer key exist and are stable: CUDA-synchronized timing with warmup, run-to-run variance between 1.0% and 2.3%, reference logits captured from HuggingFace and committed to disk, and a HuggingFace baseline recorded on the target hardware.</p>
-      <p><strong>Phase 1 onward — the engine itself — has not been built yet.</strong> The paged KV cache, continuous batching, the custom kernels, and quantization are designed but not written. There are no nano-infer performance numbers on this page because none exist yet, and a placeholder table with invented figures would undo the point of the project.</p>
-
       <h2>The problem</h2>
-      <p>Token generation on a GPU is <strong>memory-bandwidth-bound, not compute-bound</strong>. Most of the win comes from moving less data, not from doing less math. This project goes one layer below the frameworks to see where the time actually goes.</p>
-      <p>The rule the project holds itself to: HuggingFace is used for weights and tokenizer download only. The forward pass, the sampling loop, and the cache are mine. No vLLM, TensorRT-LLM, FlashAttention, or xformers — those are what it benchmarks <em>against</em>.</p>
+      <p>Token generation on a GPU is <strong>memory-bandwidth-bound, not compute-bound</strong>. The HuggingFace baseline made that obvious before a line of the engine existed: inter-token latency sat at ~51 ms whether the batch was 1 or 32, because every decode step pays to stream the whole model out of VRAM. Most of the win comes from moving less data and wasting less time between kernels, not from doing less math.</p>
+      <p>The rule the project holds itself to: HuggingFace is used for weights and tokenizer download only. The forward pass, the sampling loop, and the cache are mine. No vLLM, TensorRT-LLM, FlashAttention, or xformers.</p>
 
-      <h2>What's measured so far</h2>
-      <p>The baseline below is <strong>HuggingFace's <code>generate()</code>, not nano-infer</strong>. It is the ruler, captured before building the thing being measured, so that every later speed claim has something honest to compare against.</p>
+      <h2>What was built</h2>
+      <ul>
+        <li><strong>Correct first.</strong> A full forward pass from raw safetensors, every component bit-identical to HuggingFace eager, token-for-token on the reference prompts. Correctness gates every optimization.</li>
+        <li><strong>Paged KV cache and continuous batching</strong> — 3.8× fewer cache slots held, 4.4% fragmentation, and 1.55× on a request stream as sequences join and leave the batch mid-flight.</li>
+        <li><strong>Four custom CUDA kernels</strong> — fused RMSNorm, SwiGLU, RoPE, and an online-softmax decode attention kernel. SwiGLU and RoPE landed within 1% of a ceiling predicted by counting bytes before writing any code.</li>
+        <li><strong>CUDA-graph decode</strong> — the eager decode step turned out to be host-bound (~3,200 dispatches per step). Capturing the step as a graph made decode ~5× faster at short context.</li>
+        <li><strong>INT8/INT4 weight quantization</strong> with a fused dequantize-matmul kernel.</li>
+      </ul>
 
+      <h2>What I measured</h2>
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Batch</th><th>Tokens/sec</th><th>TTFT (ms)</th><th>Inter-token (ms)</th></tr>
+            <tr><th>Engine</th><th>tok/s @ batch 1</th><th>tok/s @ batch 32</th><th>vs HF</th></tr>
           </thead>
           <tbody>
-            <tr><td>1</td><td>19.5</td><td>63.0</td><td>51.3</td></tr>
-            <tr><td>4</td><td>76.9</td><td>59.9</td><td>51.9</td></tr>
-            <tr><td>16</td><td>313.3</td><td>67.3</td><td>50.9</td></tr>
-            <tr><td>32</td><td>621.5</td><td>68.3</td><td>51.4</td></tr>
+            <tr><td>HuggingFace <code>generate()</code></td><td>24.5</td><td>756.8</td><td>1.00×</td></tr>
+            <tr><td>Paged KV cache</td><td>24.8</td><td>749.2</td><td>0.99×</td></tr>
+            <tr><td>+ custom kernels</td><td>57.7</td><td>1694.4</td><td>2.24×</td></tr>
+            <tr class="highlight"><td>+ CUDA-graph decode</td><td>267.3</td><td>7114.2</td><td>9.40×</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="caption">HuggingFace <code>generate()</code> baseline. RTX 3070 (8 GB, Ampere sm_86, 448 GB/s peak bandwidth), Qwen2.5-0.5B-Instruct, fp16, 128 new tokens.</p>
+      <p class="caption">Qwen2.5-0.5B-Instruct, fp16, RTX 3070 (448 GB/s peak), 32-token prompt, 64 new tokens, greedy. Median of 3 after 2 warmups, all rows from one session on an idle GPU. Every row is reproducible by a script in the repo.</p>
 
-      <p><strong>The observation that motivates the project:</strong> inter-token latency is flat at roughly 51 ms across every batch size, so tokens per second scales almost linearly with batch. The per-step cost is loading weights out of VRAM, and that is paid once per step no matter how many sequences are in flight. Batch-1 serving therefore wastes most of the GPU.</p>
+      <p>On the larger Qwen2.5-1.5B the graphed batch-1 step reaches <strong>350.6 GB/s — 78.3% of the card's peak</strong>. INT8 weights decode <strong>1.61× faster</strong> than bf16 at batch 1 for <strong>+0.17% perplexity</strong>, inside the measurement error.</p>
 
-      <h2>Planned and in flight</h2>
-      <ul>
-        <li><strong>Paged KV cache and continuous batching</strong> — so sequences can join and leave a batch mid-flight instead of padding to the longest.</li>
-        <li><strong>Fused kernels</strong> — RMSNorm, SwiGLU, RoPE, and an online-softmax decode attention kernel, hand-written rather than composed from framework ops.</li>
-        <li><strong>INT8/INT4 weight-only quantization</strong> with a fused dequantize-matmul kernel, since moving fewer bytes is the whole game.</li>
-        <li><strong>Benchmarks reported as achieved memory bandwidth</strong> against the card's 448 GB/s theoretical peak, rather than as a bare speedup multiple.</li>
-      </ul>
+      <h2>What I got wrong</h2>
+      <p>The decode attention kernel missed its predicted ceiling by 10×, reaching only 11% of peak bandwidth. The cause wasn't the load path: with grouped-query attention, seven query heads share each KV head, and the kernel launched one block per query head — so the same KV rows were read seven times. Against the bytes it actually issued, it was already at 76% of peak. Regrouping so one block serves all seven heads made the kernel <strong>2.60× faster</strong> at identical numerical error.</p>
 
       <h2>Limitations</h2>
       <ul>
-        <li><strong>The engine does not exist yet.</strong> Everything past the harness and the parity tests is unbuilt. This page will carry real numbers or none.</li>
-        <li><strong>One GPU, one model, one machine.</strong> All figures come from a single RTX 3070 running Qwen2.5-0.5B. Results on an 8 GB consumer card do not necessarily transfer to datacenter hardware, where the bandwidth-to-compute ratio is different.</li>
-        <li><strong>Small model, amplified overheads.</strong> A 0.5B model exaggerates per-step fixed costs relative to a production-size model, so speedups measured here would need re-checking at scale.</li>
-        <li><strong>Quantization will cost quality</strong>, and that regression has to be reported with numbers rather than waved past.</li>
+        <li><strong>No vLLM comparison.</strong> vLLM has no Windows wheels and its source build fails on this machine. Rather than quote someone else's hardware, the row is left empty.</li>
+        <li><strong>Quantization is a trade, not a free win.</strong> The fused dequant kernel loses to cuBLAS from batch 4 up, badly at batch 32. INT4 costs ~18–21% perplexity with no calibration pass.</li>
+        <li><strong>Decode attention is still at 30% of peak.</strong> Split-K (flash-decoding) is the named next fix and isn't implemented.</li>
+        <li><strong>One GPU, two small models.</strong> Everything is an 8 GB RTX 3070; crossover points are properties of this hardware.</li>
       </ul>
 
       <h2>Related</h2>
-      <p><a class="inline-link" href="minidynamo.html">MiniDynamo</a> decides <em>which worker</em> serves a request; nano-infer is what that worker actually does on the GPU.</p>
+      <p><a class="inline-link" href="minidynamo.html">MiniDynamo</a> decides <em>which worker</em> serves a request; nano-infer is what that worker does on the GPU. The two are separate projects and aren't wired together yet.</p>
 
-      <p class="disclaimer">No public repository yet — this page is the current record of the project. It will link to the repo once the engine phase is pushed.</p>
+      <div class="detail-links">
+        <a href="https://github.com/NathanS7878/nano-infer" target="_blank" rel="noopener">GitHub repo ↗</a>
+      </div>
 
     </div>
   </article>
